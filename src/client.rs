@@ -42,9 +42,15 @@ impl FcmClient {
             }
         };
         let auth = ServiceAccountAuthenticator::builder(secret).build().await?;
+
+        let client = Client::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap();
+
         Ok(Self {
             auth,
-            http_client: Client::new(),
+            http_client: client,
             project_id,
         })
     }
@@ -71,7 +77,7 @@ impl FcmClient {
         let response = self
             .http_client
             .post(url)
-            .header("Authorization", format!("Bearer {:?}", token_str))
+            .bearer_auth(token_str)
             .json(&request) // Send the request object
             .send()
             .await?;
